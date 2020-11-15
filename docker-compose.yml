@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  book_review_database:
+    container_name: book_review_database
+    image: postgres:12-alpine
+    ports: [ "5444:5432" ]
+    networks: [ raw_net ]
+    env_file: [ ".env" ]
+    volumes: [ ".data/database:/var/postgres_local" ]
+    logging:
+      driver: "none"
+
+  book_review_api:
+    image: book_review_api:latest
+    container_name: book_review_api
+    build: .
+    command: sh scripts/start
+    volumes: [ ".:/book_review_api", ".data/gems:/.data/gems" ]
+    ports: [ "3033:3000" ]
+    networks: [ raw_net ]
+    env_file: [ ".env" ]
+    links: [ book_review_database ]
+    depends_on: [ book_review_database ]
+
+networks:
+  raw_net:
+    driver: bridge
